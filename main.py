@@ -68,14 +68,16 @@ def show_tables(conn):
     tables ='SHOW TABLES'
     cursor.execute(tables)
     results = cursor.fetchall()
+    
     print(results)
-     
+    
+ 
     return results
 
 
 #================= CRUD =========================
 
-def cria_tabela(host,user,password,db_name,conn,table_name, id_name,dict):
+def cria_tabela(conn,table_name, id_name,dict):
     
     connection = conn
     cursor = connection.cursor()
@@ -86,6 +88,9 @@ def cria_tabela(host,user,password,db_name,conn,table_name, id_name,dict):
         
         cursor.execute(f'ALTER TABLE {table_name} ADD COLUMN {column} {type_}')
         
+    cursor.close()
+    connection.close()
+        
 def insert_table(table_name,values,name_columns_list, conn):
     
     connection = conn 
@@ -93,23 +98,12 @@ def insert_table(table_name,values,name_columns_list, conn):
        
     sql = f"INSERT INTO {table_name} ({', '.join(name_columns_list)}) VALUES ({', '.join(['%s' for _ in values])})"
 
-    
-
     cursor.execute(sql, values) 
     connection.commit() 
 
     cursor.close() 
     connection.close() 
        
-
-       
-   
-   
-   
-   
-   
-   
-
 
 
 #================= PRINCIPAL =========================
@@ -123,9 +117,9 @@ def main():
     
     criar_db(host,user,password,db_name)
     
-    conn = conectar_db(host,user,password,db_name)
-    
     while(True):
+        
+        conn = conectar_db(host,user,password,db_name)
         
         dict ={}
         
@@ -161,9 +155,7 @@ def main():
             
             print('\n\n:::::: LISTA DE TABELAS ::::::')
             
-            conn_ = conectar_db(host,user,password,db_name)
-            
-            tables=show_tables(conn_)
+            tables=show_tables(conn)
             
             insert_option=input('Qual tabela você deseja alterar? (ESCREVA O NOME): ')
             
@@ -174,8 +166,8 @@ def main():
                 cursor = conn.cursor()
                 cursor.execute(table_columns)
                 columns = cursor.fetchall()
-   
-                name_columns = [column for column in columns]
+                
+                #name_columns = [column for column in columns]
    
                 values = []
                 name_columns_list = []
@@ -186,8 +178,8 @@ def main():
                     name_columns_list.append(value[0])
                     values.append(column_value)
                     
-                
                 insert_table(insert_option,values,name_columns_list,conn)
+
                 
          
                 
