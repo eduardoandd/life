@@ -74,6 +74,19 @@ def show_tables(conn):
  
     return results
 
+def get_columns(table_selected,tables,conn):
+    
+    if table_selected in  [table[0] for table in tables]:
+                
+                table_columns =  f'DESC {table_selected};'
+                
+                cursor = conn.cursor()
+                cursor.execute(table_columns)
+                columns = cursor.fetchall()
+
+    return columns
+
+
 
 #================= CRUD =========================
 
@@ -90,6 +103,19 @@ def cria_tabela(conn,table_name, id_name,dict):
         
     cursor.close()
     connection.close()
+
+def select_tabela(table_name,conn):
+    cursor  = conn.cursor()
+    
+    sql = f'SELECT * FROM {table_name}'
+    
+    cursor.execute(sql) 
+    results = cursor.fetchall() 
+    cursor.close() 
+    conn.close()
+    
+    return results 
+
         
 def insert_table(table_name,values,name_columns_list, conn):
     
@@ -104,7 +130,17 @@ def insert_table(table_name,values,name_columns_list, conn):
     cursor.close() 
     connection.close() 
        
+def update_table(table_name,column_name,new_value,id_value,id,conn):
+     
+    cursor = conn.cursor()
 
+    sql = f'UPDATE {table_name} SET {column_name}=%s WHERE {id} = {id_value}'
+    data = (new_value,)  
+
+    cursor.execute(sql, data)
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 #================= PRINCIPAL =========================
 
@@ -126,6 +162,7 @@ def main():
         print('\n\n:::::: SELECIONE UMA OPÇÃO ::::::')
         print('1 - CRIAR UMA NOVA TABELA')
         print('2 - INSERIR DADOS EM UMA TABELA EXISTENTE')
+        print('3 - ATUALIZAR DADOS EM UMA TABELA EXISTENTE')
         
         option = int(input('Digite a opção desejada: '))
         
@@ -159,28 +196,54 @@ def main():
             
             insert_option=input('Qual tabela você deseja alterar? (ESCREVA O NOME): ')
             
-            if insert_option in  [table[0] for table in tables]:
-                
-                table_columns =  f'DESC {insert_option};'
-                
-                cursor = conn.cursor()
-                cursor.execute(table_columns)
-                columns = cursor.fetchall()
-                
-                #name_columns = [column for column in columns]
+            columns = get_columns(insert_option,tables,conn)
    
-                values = []
-                name_columns_list = []
+            values = []
+            name_columns_list = []
+            
+            for value in columns[1:]:
                 
-                for value in columns[1:]:
-                    
-                    column_value = input(f'Insira um valor para coluna {value[0]}: ')
-                    name_columns_list.append(value[0])
-                    values.append(column_value)
-                    
-                insert_table(insert_option,values,name_columns_list,conn)
+                column_value = input(f'Insira um valor para coluna {value[0]}: ')
+                name_columns_list.append(value[0])
+                values.append(column_value)
+                
+            insert_table(insert_option,values,name_columns_list,conn)
 
+        elif option ==3:
+            
+            while(True):
                 
+                option=int(input('Deseja fazer alguma atualização [1]SIM [2]NÃO'))
+                
+                if option ==1:
+            
+                    print('\n\n:::::: LISTA DE TABELAS ::::::')
+
+                    tables=show_tables(conn)
+
+                    update_option=input('Qual tabela você deseja alterar? (ESCREVA O NOME): ')
+
+                    columns = get_columns(update_option,tables,conn)
+
+                    id = columns[0][0]
+
+                    print([column[0] for column in columns])
+
+                    column_name=input('Informe qual coluna deseja alterar: ')
+
+                    print(select_tabela(update_option,conn))
+                    id_value=int(input('Informe o id da coluna: '))
+                    new_value = input('Informe o novo valor: ')
+
+                    conn = conectar_db(host,user,password,db_name)
+                    update_table(update_option,column_name,new_value,id_value,id,conn)
+            
+                elif option==2:
+                    break
+                    
+            
+            
+            
          
                 
                 
