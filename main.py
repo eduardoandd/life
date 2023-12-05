@@ -110,12 +110,13 @@ def select_tabela(table_name,conn):
     sql = f'SELECT * FROM {table_name}'
     
     cursor.execute(sql) 
-    results = cursor.fetchall() 
+    results = cursor.fetchall()
+    
+    print(results) 
     cursor.close() 
     conn.close()
     
     return results 
-
         
 def insert_table(table_name,values,name_columns_list, conn):
     
@@ -142,6 +143,18 @@ def update_table(table_name,column_name,new_value,id_value,id,conn):
     cursor.close()
     conn.close()
 
+def deleta_table(table_name,id,id_value,conn):
+    
+    cursor = conn.cursor()
+    sql = f'DELETE FROM {table_name} WHERE {id} = %s'
+    data = (id_value,)
+    cursor.execute(sql,data)
+    conn.commit()
+    cursor.close()
+    conn.close()
+    
+    
+    
 #================= PRINCIPAL =========================
 
 def main():
@@ -163,6 +176,8 @@ def main():
         print('1 - CRIAR UMA NOVA TABELA')
         print('2 - INSERIR DADOS EM UMA TABELA EXISTENTE')
         print('3 - ATUALIZAR DADOS EM UMA TABELA EXISTENTE')
+        print('4 - DELETAR DADOS EM UMA TABELA EXISTENTE')
+        print('5 - VISUALIZAR DADOS EM UMA TABELA EXISTENTE')
         
         option = int(input('Digite a opção desejada: '))
         
@@ -240,7 +255,32 @@ def main():
             
                 elif option==2:
                     break
+        
+        elif option ==4:
+            print('\n\n:::::: LISTA DE TABELAS ::::::')
+
+            tables=show_tables(conn)
+
+            delete_option=input('Qual tabela você deseja alterar? (ESCREVA O NOME): ')
+
+            columns = get_columns(delete_option,tables,conn)
+            
+            id = columns[0][0]
+            
+            id_value = int(input('Informe o id que deseja remover: '))
+            
+            conn = conectar_db(host,user,password,db_name)
+            
+            deleta_table(delete_option,id,id_value,conn)
                     
+        elif option ==5:
+            
+            tables=show_tables(conn)
+
+            select_option=input('Qual tabela você deseja VISUALIZAR? (ESCREVA O NOME): ')
+            
+            conn = conectar_db(host,user,password,db_name)
+            select_tabela(select_option,conn)        
             
             
             
